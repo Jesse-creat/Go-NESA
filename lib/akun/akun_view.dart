@@ -8,6 +8,7 @@ import 'package:gojek/app_locale.dart';
 import 'package:gojek/auth/auth_service.dart';
 import 'package:gojek/auth/login_screen.dart';
 import 'package:gojek/constans.dart';
+import 'package:gojek/pesanan/pesanan_view.dart';
 
 class AkunPage extends StatefulWidget {
   const AkunPage({super.key});
@@ -474,6 +475,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
           _buildQuickActionItem(
             icon: Icons.history_rounded,
             label: 'Riwayat',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PesananView())),
           ),
           Container(
             width: 1,
@@ -489,11 +491,11 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildQuickActionItem({required IconData icon, required String label}) {
+  Widget _buildQuickActionItem({required IconData icon, required String label, VoidCallback? onTap}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
