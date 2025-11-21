@@ -23,8 +23,11 @@ class BerandaPage extends StatefulWidget {
   State<BerandaPage> createState() => _BerandaPageState();
 }
 
-class _BerandaPageState extends State<BerandaPage> {
+class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStateMixin {
   String _formattedBalance = "";
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   final List<GojekService> _gojekServiceList = [
     GojekService(
@@ -71,6 +74,33 @@ class _BerandaPageState extends State<BerandaPage> {
   void initState() {
     super.initState();
     _updateBalanceDisplay();
+    
+    // Setup animations
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _updateBalanceDisplay() {
@@ -85,28 +115,52 @@ class _BerandaPageState extends State<BerandaPage> {
     return SafeArea(
       child: Scaffold(
         appBar: GojekAppBar(),
-        backgroundColor: GoNesaPalette.grey,
+        backgroundColor: const Color(0xFFF5F7FA),
         body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                color: Colors.white,
-                child: Column(
-                  children: [
-                    _buildGopayMenu(),
-                    const SizedBox(height: 16.0),
-                    _buildGojekServicesMenu(),
-                  ],
-                ),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _buildGopayMenu(),
+                        const SizedBox(height: 20.0),
+                        _buildGojekServicesMenu(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12.0),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: _buildGoFoodFeatured(),
+                  ),
+                ],
               ),
-              Container(
-                color: Colors.white,
-                margin: const EdgeInsets.only(top: 16.0),
-                child: _buildGoFoodFeatured(),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -117,60 +171,108 @@ class _BerandaPageState extends State<BerandaPage> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xffff6a00), Color(0xffff6a00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFF6B35),
+            Color(0xFFFF8A50),
+          ],
         ),
-        borderRadius: BorderRadius.circular(3.0),
+        borderRadius: BorderRadius.circular(16.0),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF6B35).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Seabank",
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    color: Colors.white,
-                    fontFamily: "NeoSansBold",
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: const Icon(
+                        Icons.account_balance_wallet,
+                        color: Colors.white,
+                        size: 20.0,
+                      ),
+                    ),
+                    const SizedBox(width: 12.0),
+                    const Text(
+                      "Seabank",
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        color: Colors.white,
+                        fontFamily: "NeoSansBold",
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  _formattedBalance, // Tampilkan saldo dinamis
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.white,
-                    fontFamily: "NeoSansBold",
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  child: Text(
+                    _formattedBalance,
+                    style: const TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.white,
+                      fontFamily: "NeoSansBold",
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withOpacity(0.0),
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.0),
+                ],
+              ),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(32.0, 12.0, 32.0, 20.0),
+            padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 20.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildGopayMenuItem(
-                    asset: "assets/icons/icon_transfer.png",
+                    icon: Icons.send_rounded,
                     text: "Transfer",
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TransferView()))),
                 _buildGopayMenuItem(
-                    asset: "assets/icons/icon_scan.png",
+                    icon: Icons.qr_code_scanner_rounded,
                     text: "Scan QR",
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ScanQrView()))),
                 _buildGopayMenuItem(
-                    asset: "assets/icons/icon_saldo.png",
+                    icon: Icons.add_card_rounded,
                     text: "Isi Saldo",
                     onTap: () async {
                       await Navigator.push(context, MaterialPageRoute(builder: (context) => IsiSaldoView()));
                       _updateBalanceDisplay();
                     }),
                 _buildGopayMenuItem(
-                    asset: "assets/icons/icon_menu.png",
+                    icon: Icons.more_horiz_rounded,
                     text: "Lainnya",
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LainnyaView()))),
               ],
@@ -181,16 +283,34 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _buildGopayMenuItem({required String asset, required String text, required VoidCallback onTap}) {
+  Widget _buildGopayMenuItem({required IconData icon, required String text, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(asset, width: 32.0, height: 32.0),
-          const SizedBox(height: 10.0),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 12.0)),
-        ],
+      borderRadius: BorderRadius.circular(12.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: Icon(icon, color: Colors.white, size: 24.0),
+            ),
+            const SizedBox(height: 8.0),
+            Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11.0,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -202,91 +322,167 @@ class _BerandaPageState extends State<BerandaPage> {
       itemCount: _gojekServiceList.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.0,
+        crossAxisSpacing: 8.0,
+        mainAxisSpacing: 8.0,
       ),
       itemBuilder: (context, index) {
-        return _rowGojekService(_gojekServiceList[index]);
+        return _rowGojekService(_gojekServiceList[index], index);
       },
     );
   }
 
-  Widget _rowGojekService(GojekService gojekService) {
-    return InkWell(
-      onTap: () {
-        Widget? destination;
-        switch (gojekService.title) {
-          case "GO-RIDE":
-            destination = const GoRideView();
-            break;
-          case "GO-CAR":
-            destination = const GocarView();
-            break;
-          case "GO-BLUEBIRD":
-            destination = const GoBluebirdView();
-            break;
-          case "GO-FOOD":
-            destination = const GofoodView();
-            break;
-          case "GO-SEND":
-            destination = const GosendView();
-            break;
-          case "GO-DEALS":
-            destination = const GodealsView();
-            break;
-          case "GO-PULSA":
-            destination = const GopulsaView();
-            break;
-          case "LAINNYA":
-            destination = const LainnyaView();
-            break;
-        }
-        if (destination != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => destination!),
-          );
-        }
-      },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: GoNesaPalette.grey200, width: 1.0),
-              borderRadius: BorderRadius.circular(20.0),
-            ),
-            padding: const EdgeInsets.all(12.0),
-            child: Icon(
-              gojekService.image,
-              color: gojekService.color,
-              size: 32.0,
-            ),
+  Widget _rowGojekService(GojekService gojekService, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 400 + (index * 50)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Opacity(
+            opacity: value,
+            child: child,
           ),
-          const SizedBox(height: 6.0),
-          Text(gojekService.title, style: const TextStyle(fontSize: 10.0)),
-        ],
+        );
+      },
+      child: InkWell(
+        onTap: () {
+          Widget? destination;
+          switch (gojekService.title) {
+            case "GO-RIDE":
+              destination = const GoRideView();
+              break;
+            case "GO-CAR":
+              destination = const GocarView();
+              break;
+            case "GO-BLUEBIRD":
+              destination = const GoBluebirdView();
+              break;
+            case "GO-FOOD":
+              destination = const GofoodView();
+              break;
+            case "GO-SEND":
+              destination = const GosendView();
+              break;
+            case "GO-DEALS":
+              destination = const GodealsView();
+              break;
+            case "GO-PULSA":
+              destination = const GopulsaView();
+              break;
+            case "LAINNYA":
+              destination = const LainnyaView();
+              break;
+          }
+          if (destination != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => destination!),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(16.0),
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: gojekService.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14.0),
+                  border: Border.all(
+                    color: gojekService.color.withOpacity(0.2),
+                    width: 1.5,
+                  ),
+                ),
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(
+                  gojekService.image,
+                  color: gojekService.color,
+                  size: 28.0,
+                ),
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                gojekService.title,
+                style: const TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2C3E50),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildGoFoodFeatured() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text("GO-FOOD", style: TextStyle(fontFamily: "NeoSansBold")),
-          const SizedBox(height: 8.0),
-          const Text("Pilihan Terlaris", style: TextStyle(fontFamily: "NeoSansBold")),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: GoNesaPalette.menuFood.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Icon(
+                  Icons.restaurant_menu,
+                  color: GoNesaPalette.menuFood,
+                  size: 20.0,
+                ),
+              ),
+              const SizedBox(width: 12.0),
+              const Text(
+                "GO-FOOD",
+                style: TextStyle(
+                  fontFamily: "NeoSansBold",
+                  fontSize: 18.0,
+                  color: Color(0xFF2C3E50),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Pilihan Terlaris",
+                style: TextStyle(
+                  fontFamily: "NeoSansBold",
+                  fontSize: 16.0,
+                  color: Color(0xFF34495E),
+                ),
+              ),
+              Text(
+                "Lihat Semua",
+                style: TextStyle(
+                  fontSize: 13.0,
+                  color: GoNesaPalette.menuFood,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16.0),
           SizedBox(
-            height: 172.0,
+            height: 190.0,
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 12.0),
-              physics: const ClampingScrollPhysics(),
+              padding: EdgeInsets.zero,
+              physics: const BouncingScrollPhysics(),
               scrollDirection: Axis.horizontal,
               itemCount: _goFoodFeaturedList.length,
               itemBuilder: (context, index) {
-                return _rowGoFoodFeatured(_goFoodFeaturedList[index]);
+                return _rowGoFoodFeatured(_goFoodFeaturedList[index], index);
               },
             ),
           ),
@@ -295,23 +491,136 @@ class _BerandaPageState extends State<BerandaPage> {
     );
   }
 
-  Widget _rowGoFoodFeatured(Food food) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16.0),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.asset(
-              food.image,
-              width: 132.0,
-              height: 132.0,
-              fit: BoxFit.cover,
+  Widget _rowGoFoodFeatured(Food food, int index) {
+    return TweenAnimationBuilder<double>(
+      duration: Duration(milliseconds: 500 + (index * 100)),
+      tween: Tween(begin: 0.0, end: 1.0),
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(20 * (1 - value), 0),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 16.0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {},
+            borderRadius: BorderRadius.circular(16.0),
+            child: Container(
+              width: 140.0,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16.0),
+                      topRight: Radius.circular(16.0),
+                    ),
+                    child: Stack(
+                      children: [
+                        Image.asset(
+                          food.image,
+                          width: 140.0,
+                          height: 120.0,
+                          fit: BoxFit.cover,
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(6.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.favorite_border,
+                              size: 16.0,
+                              color: Color(0xFFE74C3C),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          food.title,
+                          style: const TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF2C3E50),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4.0),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              size: 14.0,
+                              color: Colors.amber[700],
+                            ),
+                            const SizedBox(width: 4.0),
+                            const Text(
+                              "4.8",
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF7F8C8D),
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            const Icon(
+                              Icons.access_time,
+                              size: 14.0,
+                              color: Color(0xFF7F8C8D),
+                            ),
+                            const SizedBox(width: 4.0),
+                            const Text(
+                              "20 min",
+                              style: TextStyle(
+                                fontSize: 11.0,
+                                color: Color(0xFF7F8C8D),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 8.0),
-          Text(food.title),
-        ],
+        ),
       ),
     );
   }

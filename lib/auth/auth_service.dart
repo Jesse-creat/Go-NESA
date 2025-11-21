@@ -1,49 +1,62 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
-  static const _emailKey = 'user_email';
-  static const _passwordKey = 'user_password'; // Tidak aman, hanya untuk demo
-  static const _loggedInKey = 'is_logged_in';
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Mendaftarkan pengguna baru
-  static Future<bool> registerUser(String email, String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    
-    // Di aplikasi nyata, Anda mungkin ingin memeriksa apakah email sudah ada
-    // di database server, bukan hanya di SharedPreferences.
-    // Untuk demo ini, kita asumsikan hanya ada satu pengguna.
-    
-    await prefs.setString(_emailKey, email);
-    await prefs.setString(_passwordKey, password);
-    await prefs.setBool(_loggedInKey, true); // <-- TAMBAHAN: Langsung set status login
-    return true;
+  // Mendaftarkan pengguna baru dengan Firebase Auth dan buat profil di Firestore
+  static Future<bool> registerUser(String email, String password, {String? name, String? phone}) async {
+    try {
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Buat profil user di Firestore secara paralel dengan operasi lainnya
+      _db.collection('users').doc(userCredential.user!.uid).set({
+        'email': email,
+        'name': name ?? '',
+        'phone': phone ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      }).catchError((error) {
+        print('Error saving user profile: $error');
+        // Tidak throw error agar registrasi tetap berhasil meski Firestore gagal
+      });
+
+      return true;
+    } catch (e) {
+      print('Error registering user: $e');
+      return false;
+    }
   }
 
-  // Login pengguna
+  // Login pengguna dengan Firebase Auth
   static Future<bool> loginUser(String email, String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedEmail = prefs.getString(_emailKey);
-    final storedPassword = prefs.getString(_passwordKey);
-
-    if (email == storedEmail && password == storedPassword) {
-      await prefs.setBool(_loggedInKey, true); // Set status login
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       return true;
+    } catch (e) {
+      print('Error logging in: $e');
+      return false;
     }
-    return false;
   }
 
   // Logout pengguna
   static Future<void> logoutUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_loggedInKey, false);
-    // Anda mungkin juga ingin menghapus email dan password saat logout
-    // await prefs.remove(_emailKey);
-    // await prefs.remove(_passwordKey);
+    await _auth.signOut();
   }
 
   // Cek status login
   static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_loggedInKey) ?? false;
+    return _auth.currentUser != null;
+  }
+
+  // Get current user
+  static User? getCurrentUser() {
+    return _auth.currentUser;
   }
 }

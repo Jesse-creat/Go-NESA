@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:gojek/constans.dart';
+import 'package:gojek/firebase_options.dart';
 import 'package:gojek/splash_screen.dart';
 
-void main() {
+void main() async {
   // Pastikan binding Flutter sudah siap
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 

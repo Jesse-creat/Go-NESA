@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:gojek/landingpage/landingpage_view.dart';
+import 'package:gojek/auth/login_screen.dart';
+import 'package:gojek/auth/auth_service.dart';
 
 class LauncherPage extends StatefulWidget {
   @override
@@ -16,9 +18,11 @@ class _LauncherPageState extends State<LauncherPage> {
 
   startLaunching() async {
     var duration = const Duration(seconds: 1);
-    return new Timer(duration, () {
+    return new Timer(duration, () async {
+      bool isLoggedIn = await AuthService.isLoggedIn();
+      Widget nextPage = isLoggedIn ? new LandingPage() : new LoginScreen();
       Navigator.of(context).pushReplacement(new MaterialPageRoute(builder: (_) {
-        return new LandingPage();
+        return nextPage;
       }));
     });
   }

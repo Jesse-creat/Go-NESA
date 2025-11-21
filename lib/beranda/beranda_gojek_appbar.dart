@@ -4,65 +4,175 @@ import 'package:gojek/pesanan/pesanan_view.dart';
 class GojekAppBar extends AppBar {
   GojekAppBar()
       : super(
-            elevation: 0.25,
+            elevation: 0,
             backgroundColor: Colors.white,
-            flexibleSpace: _buildGojekAppBar());
+            flexibleSpace: _buildGojekAppBar(),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.grey.withOpacity(0.0),
+                      Colors.grey.withOpacity(0.1),
+                      Colors.grey.withOpacity(0.0),
+                    ],
+                  ),
+                ),
+                height: 1.0,
+              ),
+            ),
+          );
 
   static Widget _buildGojekAppBar() {
     return Builder(
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Image.asset(
-                "assets/Go.png",
-                height: 300.0,
-              ),
+              // Logo Section
               Container(
-                child: Row(
-                  children: <Widget>[
-                    // Tombol baru untuk riwayat pesanan
-                    IconButton(
-                      icon: Icon(Icons.receipt_long, color: Colors.grey[700]),
-                      onPressed: () {
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: Image.asset(
+                  "assets/Go.png",
+                  height: 28.0,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              
+              // Right Section - Actions
+              Row(
+                children: <Widget>[
+                  // Rewards Point Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 6.0,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFFFD180).withOpacity(0.3),
+                          const Color(0xFFFFB74D).withOpacity(0.3),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20.0),
+                      border: Border.all(
+                        color: const Color(0xFFFFB74D).withOpacity(0.3),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4.0),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[700],
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.stars_rounded,
+                            color: Colors.white,
+                            size: 14.0,
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
+                        const Text(
+                          "1.781",
+                          style: TextStyle(
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFE65100),
+                          ),
+                        ),
+                        const SizedBox(width: 4.0),
+                        Text(
+                          "poin",
+                          style: TextStyle(
+                            fontSize: 11.0,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(width: 12.0),
+                  
+                  // Order History Button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => PesananView()),
+                          MaterialPageRoute(
+                            builder: (context) => PesananView(),
+                          ),
                         );
                       },
-                    ),
-                    SizedBox(width: 16.0), // Jarak antara tombol
-                    Container(
-                      height: 28.0,
-                      width: 28.0,
-                      padding: const EdgeInsets.all(6.0),
-                      decoration: const BoxDecoration(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(100.0)),
-                          color: Colors.orangeAccent),
-                      alignment: Alignment.centerRight,
-                      child: const Icon(
-                        Icons.local_bar,
-                        color: Colors.white,
-                        size: 16.0,
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F7FA),
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(
+                            color: Colors.grey.withOpacity(0.15),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.receipt_long_rounded,
+                          color: Colors.grey[700],
+                          size: 20.0,
+                        ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(6.0),
-                      decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(5.0)),
-                          color: const Color(0x50FFD180)),
-                      child: const Text(
-                        "1.781 poin",
-                        style: TextStyle(fontSize: 14.0),
+                  ),
+                  
+                  const SizedBox(width: 8.0),
+                  
+                  // Profile/Menu Button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        // Add profile/menu action here
+                      },
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF00AA13),
+                              const Color(0xFF00C91D),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00AA13).withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 20.0,
+                        ),
                       ),
-                    )
-                  ],
-                ),
-              )
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         );
