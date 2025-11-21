@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:gojek/akun/edit_akun_view.dart';
 import 'package:gojek/akun/pilih_bahasa_view.dart';
+import 'package:gojek/akun/pusat_bantuan_view.dart';
 import 'package:gojek/app_locale.dart';
 import 'package:gojek/auth/auth_service.dart';
 import 'package:gojek/auth/login_screen.dart';
@@ -589,11 +590,11 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
           _buildDivider(),
           _buildMenuItem(
             icon: Icons.help_outline_rounded,
-            title: 'Pusat Bantuan',
-            subtitle: 'FAQ & dukungan pelanggan',
+            title: AppLocale.pusatBantuan.getString(context),
+            subtitle: AppLocale.faq.getString(context),
             color: Colors.teal,
             gradient: [Colors.teal.shade400, Colors.teal.shade600],
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PusatBantuanView())),
           ),
         ],
       ),
