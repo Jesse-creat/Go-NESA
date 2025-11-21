@@ -1,4 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/akun/edit_akun_view.dart';
+import 'package:gojek/akun/pilih_bahasa_view.dart';
+import 'package:gojek/app_locale.dart';
 import 'package:gojek/auth/auth_service.dart';
 import 'package:gojek/auth/login_screen.dart';
 import 'package:gojek/constans.dart';
@@ -15,9 +21,14 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
+  final User? _currentUser = FirebaseAuth.instance.currentUser;
+  String _namaPengguna = 'Nama Pengguna';
+  String _nomorTelepon = '+62 8xx-xxxx-xxxx';
+
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -38,6 +49,18 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
     ));
     
     _animationController.forward();
+  }
+
+  Future<void> _loadUserData() async {
+    if (_currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(_currentUser!.uid).get();
+      if (userDoc.exists && mounted) {
+        setState(() {
+          _namaPengguna = userDoc.get('nama');
+          _nomorTelepon = userDoc.get('telepon');
+        });
+      }
+    }
   }
 
   @override
@@ -90,9 +113,9 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
       backgroundColor: const Color(0xFF00AA13),
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Profil Saya',
-          style: TextStyle(
+        title: Text(
+          AppLocale.profileSaya.getString(context),
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 20,
@@ -211,7 +234,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                 child: const CircleAvatar(
                   radius: 38,
                   backgroundColor: Colors.transparent,
-                  backgroundImage: null, // Tambahkan NetworkImage jika ada foto
+                  backgroundImage: null,
                   child: Icon(Icons.person, size: 42, color: Color(0xFF00AA13)),
                 ),
               ),
@@ -222,9 +245,9 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Nama Pengguna',
-                  style: TextStyle(
+                Text(
+                  _namaPengguna,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2C3E50),
@@ -267,7 +290,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                     Icon(Icons.phone_outlined, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 6),
                     Text(
-                      '+62 812-3456-7890',
+                      _nomorTelepon,
                       style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 13,
@@ -282,7 +305,10 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () {},
+              onTap: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (context) => const EditAkunView()));
+                _loadUserData();
+              },
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -506,15 +532,15 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
       ),
       child: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(20),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(Icons.settings_rounded, color: Color(0xFF00AA13), size: 20),
-                SizedBox(width: 8),
+                const Icon(Icons.settings_rounded, color: Color(0xFF00AA13), size: 20),
+                const SizedBox(width: 8),
                 Text(
-                  'Pengaturan Akun',
-                  style: TextStyle(
+                  AppLocale.pengaturanAkun.getString(context),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2C3E50),
@@ -525,10 +551,11 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
           ),
           _buildMenuItem(
             icon: Icons.shield_rounded,
-            title: 'Keamanan Akun',
-            subtitle: 'Kelola password & verifikasi',
+            title: AppLocale.keamananAkun.getString(context),
+            subtitle: AppLocale.kelolaPassword.getString(context),
             color: Colors.blue,
             gradient: [Colors.blue.shade400, Colors.blue.shade600],
+            onTap: () {},
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -537,6 +564,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             subtitle: '5 voucher tersedia',
             color: Colors.orange,
             gradient: [Colors.orange.shade400, Colors.orange.shade600],
+            onTap: () {},
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -545,14 +573,16 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             subtitle: 'Kelola kartu & rekening',
             color: Colors.green,
             gradient: [Colors.green.shade400, Colors.green.shade600],
+            onTap: () {},
           ),
           _buildDivider(),
           _buildMenuItem(
             icon: Icons.language_rounded,
-            title: 'Bahasa',
-            subtitle: 'Bahasa Indonesia',
+            title: AppLocale.bahasa.getString(context),
+            subtitle: 'Pilih preferensi bahasa Anda',
             color: Colors.purple,
             gradient: [Colors.purple.shade400, Colors.purple.shade600],
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PilihBahasaView())),
           ),
           _buildDivider(),
           _buildMenuItem(
@@ -561,6 +591,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             subtitle: 'FAQ & dukungan pelanggan',
             color: Colors.teal,
             gradient: [Colors.teal.shade400, Colors.teal.shade600],
+            onTap: () {},
           ),
         ],
       ),
@@ -573,62 +604,44 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
     required String subtitle,
     required Color color,
     required List<Color> gradient,
+    required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: gradient),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Icon(icon, color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.grey[400],
-                size: 24,
-              ),
-            ],
-          ),
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: gradient),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
+        child: Icon(icon, color: Colors.white, size: 22),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF2C3E50),
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey[600],
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: Colors.grey[400],
+        size: 24,
       ),
     );
   }
@@ -685,7 +698,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                 Icon(Icons.logout_rounded, color: Colors.red.shade600, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  'Keluar dari Akun',
+                  AppLocale.keluar.getString(context),
                   style: TextStyle(
                     color: Colors.red.shade700,
                     fontWeight: FontWeight.bold,
@@ -724,18 +737,18 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Keluar',
-                style: TextStyle(
+              Text(
+                AppLocale.keluar.getString(context),
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
                 ),
               ),
             ],
           ),
-          content: const Text(
-            'Apakah Anda yakin ingin keluar dari akun?',
-            style: TextStyle(fontSize: 15),
+          content: Text(
+            AppLocale.yakinKeluar.getString(context),
+            style: const TextStyle(fontSize: 15),
           ),
           actions: [
             TextButton(
@@ -747,7 +760,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                 ),
               ),
               child: Text(
-                'Batal',
+                AppLocale.batal.getString(context),
                 style: TextStyle(
                   color: Colors.grey[700],
                   fontWeight: FontWeight.w600,
@@ -773,9 +786,9 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text(
-                'Keluar',
-                style: TextStyle(
+              child: Text(
+                AppLocale.keluar.getString(context),
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),

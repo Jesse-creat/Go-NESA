@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/app_locale.dart';
+import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
-import 'package:gojek/pesanan/pesanan_view.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class GopulsaView extends StatefulWidget {
   const GopulsaView({super.key});
@@ -32,6 +35,19 @@ class _GopulsaViewState extends State<GopulsaView> {
       return;
     }
 
+    if (OrderData.currentBalance < _selectedNominal!) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Saldo tidak mencukupi!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    OrderData.currentBalance -= _selectedNominal!;
+    OrderData.saveBalance();
+
     final newOrder = Order(
       serviceIcon: Icons.phonelink_ring,
       serviceName: 'GO-PULSA',
@@ -44,23 +60,39 @@ class _GopulsaViewState extends State<GopulsaView> {
     OrderData.history.insert(0, newOrder);
     OrderData.saveOrders();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Pembelian pulsa untuk ${_phoneController.text} berhasil!"),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => BerandaPage()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => PesananView()),
-          (Route<dynamic> route) => false,
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
+                const SizedBox(height: 16),
+                Text(
+                  "Pembelian pulsa untuk ${_phoneController.text} berhasil!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
         );
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -68,25 +100,25 @@ class _GopulsaViewState extends State<GopulsaView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuPulsa,
-        title: const Text('Beli Pulsa'),
+        title: Text(AppLocale.beliPulsa.getString(context)),
         elevation: 0,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20.0),
         children: [
-          const Text("Isi Ulang Pulsa", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(AppLocale.isiUlangPulsa.getString(context), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           TextField(
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
-              labelText: 'Nomor Telepon',
+              labelText: AppLocale.nomorTelepon.getString(context),
               prefixIcon: Icon(Icons.phone_android, color: GoNesaPalette.menuPulsa),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
           const SizedBox(height: 20),
-          const Text("Pilih Nominal", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(AppLocale.pilihNominal.getString(context), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           GridView.builder(
             shrinkWrap: true,
@@ -138,7 +170,7 @@ class _GopulsaViewState extends State<GopulsaView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Total Pembayaran:", style: TextStyle(fontSize: 16)),
+            Text(AppLocale.totalPembayaran.getString(context), style: const TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -153,9 +185,9 @@ class _GopulsaViewState extends State<GopulsaView> {
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: const Text(
-            'Beli Pulsa',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+          child: Text(
+            AppLocale.beliPulsa.getString(context),
+            style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
       ],

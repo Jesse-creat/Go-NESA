@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/app_locale.dart';
+import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
-import 'package:gojek/pesanan/pesanan_view.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class GocarView extends StatefulWidget {
   const GocarView({super.key});
@@ -53,7 +56,6 @@ class _GocarViewState extends State<GocarView> {
         return;
       }
       final random = Random();
-      // Harga Go-Car sedikit lebih mahal dari Go-Ride
       final randomPrice = (25000 + random.nextInt(35001)).toDouble();
       setState(() {
         _rawPrice = randomPrice;
@@ -64,6 +66,19 @@ class _GocarViewState extends State<GocarView> {
   }
 
   void _createOrder() {
+    if (OrderData.currentBalance < _rawPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Saldo tidak mencukupi!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    OrderData.currentBalance -= _rawPrice;
+    OrderData.saveBalance();
+    
     final newOrder = Order(
       serviceIcon: Icons.local_car_wash,
       serviceName: 'GO-CAR',
@@ -76,23 +91,39 @@ class _GocarViewState extends State<GocarView> {
     OrderData.history.insert(0, newOrder);
     OrderData.saveOrders();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Pemesanan berhasil! Driver sedang menuju lokasi."),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => BerandaPage()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => PesananView()),
-          (Route<dynamic> route) => false,
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
+                const SizedBox(height: 16),
+                const Text(
+                  "Pemesanan berhasil! Driver sedang menuju lokasi.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
         );
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -100,7 +131,7 @@ class _GocarViewState extends State<GocarView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuCar,
-        title: const Text('Pesan Go-Car'),
+        title: Text(AppLocale.pesanGoCar.getString(context)),
         elevation: 0,
       ),
       body: Column(
@@ -141,7 +172,7 @@ class _GocarViewState extends State<GocarView> {
             const Text("Pilih Lokasi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
             _buildLocationDropdown(
-              hint: 'Lokasi Penjemputan',
+              hint: AppLocale.lokasiJemput.getString(context),
               icon: Icons.my_location,
               value: _selectedFrom,
               onChanged: (value) {
@@ -153,7 +184,7 @@ class _GocarViewState extends State<GocarView> {
             ),
             const SizedBox(height: 10),
             _buildLocationDropdown(
-              hint: 'Tujuan Anda',
+              hint: AppLocale.tujuanAnda.getString(context),
               icon: Icons.location_on,
               value: _selectedTo,
               onChanged: (value) {
@@ -202,7 +233,7 @@ class _GocarViewState extends State<GocarView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Estimasi Harga:", style: TextStyle(fontSize: 16)),
+            Text(AppLocale.estimasiHarga.getString(context), style: const TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -218,9 +249,9 @@ class _GocarViewState extends State<GocarView> {
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: const Text(
-            'Pesan Go-Car',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+          child: Text(
+            AppLocale.pesanSekarang.getString(context),
+            style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
       ],

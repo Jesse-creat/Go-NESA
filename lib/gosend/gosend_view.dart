@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/app_locale.dart';
+import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
-import 'package:gojek/pesanan/pesanan_view.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class GosendView extends StatefulWidget {
   const GosendView({super.key});
@@ -52,6 +55,19 @@ class _GosendViewState extends State<GosendView> {
   }
 
   void _createOrder() {
+    if (OrderData.currentBalance < _rawPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Saldo tidak mencukupi!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    OrderData.currentBalance -= _rawPrice;
+    OrderData.saveBalance();
+
     final newOrder = Order(
       serviceIcon: Icons.next_week,
       serviceName: 'GO-SEND',
@@ -64,23 +80,39 @@ class _GosendViewState extends State<GosendView> {
     OrderData.history.insert(0, newOrder);
     OrderData.saveOrders();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Pesanan Go-Send berhasil dibuat!"),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => BerandaPage()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => PesananView()),
-          (Route<dynamic> route) => false,
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
+                const SizedBox(height: 16),
+                const Text(
+                  "Pesanan Go-Send berhasil dibuat!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
         );
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -88,7 +120,7 @@ class _GosendViewState extends State<GosendView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuSend,
-        title: const Text('Kirim Barang (Go-Send)'),
+        title: Text(AppLocale.pesanGoSend.getString(context)),
         elevation: 0,
       ),
       body: Form(
@@ -97,23 +129,23 @@ class _GosendViewState extends State<GosendView> {
         child: ListView(
           padding: const EdgeInsets.all(20.0),
           children: [
-            const Text("Detail Pengiriman", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(AppLocale.detailPengiriman.getString(context), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             _buildTextFormField(
               controller: _senderController,
-              label: 'Alamat Pengirim',
+              label: AppLocale.alamatPengirim.getString(context),
               icon: Icons.person_pin_circle,
             ),
             const SizedBox(height: 15),
             _buildTextFormField(
               controller: _recipientController,
-              label: 'Alamat Penerima',
+              label: AppLocale.alamatPenerima.getString(context),
               icon: Icons.location_on,
             ),
             const SizedBox(height: 15),
             _buildTextFormField(
               controller: _itemController,
-              label: 'Deskripsi Barang',
+              label: AppLocale.deskripsiBarang.getString(context),
               icon: Icons.inventory_2,
             ),
             const SizedBox(height: 30),
@@ -151,7 +183,7 @@ class _GosendViewState extends State<GosendView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Ongkos Kirim:", style: TextStyle(fontSize: 16)),
+            Text(AppLocale.ongkosKirim.getString(context), style: const TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -167,9 +199,9 @@ class _GosendViewState extends State<GosendView> {
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: const Text(
-            'Pesan Go-Send',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+          child: Text(
+            AppLocale.pesanGoSend.getString(context),
+            style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
       ],

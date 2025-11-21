@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/app_locale.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/beranda/beranda_model.dart';
 import 'package:gojek/beranda/beranda_gojek_appbar.dart';
@@ -29,38 +31,42 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  final List<GojekService> _gojekServiceList = [
-    GojekService(
-        image: Icons.directions_bike,
-        color: GoNesaPalette.menuRide,
-        title: "GO-RIDE"),
-    GojekService(
-        image: Icons.local_car_wash,
-        color: GoNesaPalette.menuCar,
-        title: "GO-CAR"),
-    GojekService(
-        image: Icons.directions_car,
-        color: GoNesaPalette.menuBluebird,
-        title: "GO-BLUEBIRD"),
-    GojekService(
-        image: Icons.restaurant,
-        color: GoNesaPalette.menuFood,
-        title: "GO-FOOD"),
-    GojekService(
-        image: Icons.next_week,
-        color: GoNesaPalette.menuSend,
-        title: "GO-SEND"),
-    GojekService(
-        image: Icons.local_offer,
-        color: GoNesaPalette.menuDeals,
-        title: "GO-DEALS"),
-    GojekService(
-        image: Icons.phonelink_ring,
-        color: GoNesaPalette.menuPulsa,
-        title: "GO-PULSA"),
-    GojekService(
-        image: Icons.apps, color: GoNesaPalette.menuOther, title: "LAINNYA"),
-  ];
+  List<GojekService> _getGojekServices(BuildContext context) {
+    return [
+      GojekService(
+          image: Icons.directions_bike,
+          color: GoNesaPalette.menuRide,
+          title: "GO-RIDE"),
+      GojekService(
+          image: Icons.local_car_wash,
+          color: GoNesaPalette.menuCar,
+          title: "GO-CAR"),
+      GojekService(
+          image: Icons.directions_car,
+          color: GoNesaPalette.menuBluebird,
+          title: "GO-BLUEBIRD"),
+      GojekService(
+          image: Icons.restaurant,
+          color: GoNesaPalette.menuFood,
+          title: "GO-FOOD"),
+      GojekService(
+          image: Icons.next_week,
+          color: GoNesaPalette.menuSend,
+          title: "GO-SEND"),
+      GojekService(
+          image: Icons.local_offer,
+          color: GoNesaPalette.menuDeals,
+          title: "GO-DEALS"),
+      GojekService(
+          image: Icons.phonelink_ring,
+          color: GoNesaPalette.menuPulsa,
+          title: "GO-PULSA"),
+      GojekService(
+          image: Icons.apps,
+          color: GoNesaPalette.menuOther,
+          title: AppLocale.lainnya.getString(context)),
+    ];
+  }
 
   final List<Food> _goFoodFeaturedList = [
     Food(title: "Steak Andakar", image: "assets/images/food_1.jpg"),
@@ -75,7 +81,6 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
     super.initState();
     _updateBalanceDisplay();
     
-    // Setup animations
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -273,7 +278,7 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
                     }),
                 _buildGopayMenuItem(
                     icon: Icons.more_horiz_rounded,
-                    text: "Lainnya",
+                    text: AppLocale.lainnya.getString(context),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LainnyaView()))),
               ],
             ),
@@ -316,10 +321,11 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
   }
 
   Widget _buildGojekServicesMenu() {
+    final services = _getGojekServices(context);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _gojekServiceList.length,
+      itemCount: services.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         childAspectRatio: 1.0,
@@ -327,7 +333,7 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
         mainAxisSpacing: 8.0,
       ),
       itemBuilder: (context, index) {
-        return _rowGojekService(_gojekServiceList[index], index);
+        return _rowGojekService(services[index], index);
       },
     );
   }
@@ -371,6 +377,7 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
               destination = const GopulsaView();
               break;
             case "LAINNYA":
+            case "MORE":
               destination = const LainnyaView();
               break;
           }

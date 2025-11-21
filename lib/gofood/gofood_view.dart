@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/app_locale.dart';
+import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
-import 'package:gojek/pesanan/pesanan_view.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class GofoodView extends StatefulWidget {
   const GofoodView({super.key});
@@ -43,7 +46,6 @@ class _GofoodViewState extends State<GofoodView> {
   void _calculatePrice() {
     if (_selectedFood != null) {
       final price = _foodOptions[_selectedFood]!;
-      // Add a random delivery fee
       final deliveryFee = (5000 + Random().nextInt(10001)).toDouble();
       setState(() {
         _rawPrice = price + deliveryFee;
@@ -54,6 +56,19 @@ class _GofoodViewState extends State<GofoodView> {
   }
 
   void _createOrder() {
+    if (OrderData.currentBalance < _rawPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Saldo tidak mencukupi!"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    OrderData.currentBalance -= _rawPrice;
+    OrderData.saveBalance();
+
     final newOrder = Order(
       serviceIcon: Icons.restaurant,
       serviceName: 'GO-FOOD',
@@ -66,23 +81,39 @@ class _GofoodViewState extends State<GofoodView> {
     OrderData.history.insert(0, newOrder);
     OrderData.saveOrders();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Pesanan makananmu sedang disiapkan!"),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => BerandaPage()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => PesananView()),
-          (Route<dynamic> route) => false,
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
+                const SizedBox(height: 16),
+                const Text(
+                  "Pesanan makananmu sedang disiapkan!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
         );
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -90,7 +121,7 @@ class _GofoodViewState extends State<GofoodView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuFood,
-        title: const Text('Pesan Go-Food'),
+        title: Text(AppLocale.pesanMakanan.getString(context)),
         elevation: 0,
       ),
       body: Padding(
@@ -98,14 +129,14 @@ class _GofoodViewState extends State<GofoodView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text("Mau makan apa hari ini?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(AppLocale.mauMakanApa.getString(context), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               value: _selectedFood,
               isExpanded: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.fastfood, color: GoNesaPalette.menuFood),
-                labelText: 'Pilih Makanan Favoritmu',
+                labelText: AppLocale.pilihMakananFavorit.getString(context),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
               ),
@@ -136,7 +167,7 @@ class _GofoodViewState extends State<GofoodView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Total Harga:", style: TextStyle(fontSize: 16)),
+            Text(AppLocale.totalHarga.getString(context), style: const TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -152,9 +183,9 @@ class _GofoodViewState extends State<GofoodView> {
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: const Text(
-            'Pesan Makanan',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+          child: Text(
+            AppLocale.pesanMakanan.getString(context),
+            style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
       ],
