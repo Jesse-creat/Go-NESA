@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/beranda/beranda_model.dart';
-import 'package:gojek/goride/goride_view.dart';
 import 'package:gojek/gocar/gocar_view.dart';
 import 'package:gojek/gobluebird/gobluebird_view.dart';
 import 'package:gojek/gofood/gofood_view.dart';
 import 'package:gojek/gosend/gosend_view.dart';
 import 'package:gojek/godeals/godeals_view.dart';
 import 'package:gojek/gopulsa/gopulsa_view.dart';
+import 'package:gojek/goride/goride_view.dart';
 
 class LainnyaView extends StatelessWidget {
   const LainnyaView({super.key});
@@ -73,7 +73,7 @@ class LainnyaView extends StatelessWidget {
         destination = const GoBluebirdView();
         break;
       case "GO-FOOD":
-        destination = const GofoodView();
+        destination = GofoodView();
         break;
       case "GO-SEND":
         destination = const GosendView();
@@ -88,7 +88,7 @@ class LainnyaView extends StatelessWidget {
     if (destination != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => destination!),
+        MaterialPageRoute(builder: (context) => destination),
       );
     }
   }
