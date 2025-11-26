@@ -35,6 +35,7 @@ class _SuccessAnimationViewState extends State<SuccessAnimationView> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -19,13 +19,14 @@ import 'package:gojek/transfer/transfer_view.dart';
 import 'package:intl/intl.dart';
 
 class BerandaPage extends StatefulWidget {
-  BerandaPage({super.key});
+  const BerandaPage({super.key});
 
   @override
   State<BerandaPage> createState() => _BerandaPageState();
 }
 
-class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStateMixin {
+class _BerandaPageState extends State<BerandaPage>
+    with SingleTickerProviderStateMixin {
   String _formattedBalance = "";
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -62,9 +63,10 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
           color: GoNesaPalette.menuPulsa,
           title: "GO-PULSA"),
       GojekService(
-          image: Icons.apps,
-          color: GoNesaPalette.menuOther,
-          title: AppLocale.lainnya.getString(context)),
+        image: Icons.apps,
+        color: GoNesaPalette.menuOther,
+        title: AppLocale.lainnya.getString(context),
+      ),
     ];
   }
 
@@ -80,25 +82,27 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _updateBalanceDisplay();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOut,
+      ),
+    );
+
     _animationController.forward();
   }
 
@@ -109,17 +113,68 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
   }
 
   void _updateBalanceDisplay() {
-    final currencyFormatter = NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormatter =
+        NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
     setState(() {
       _formattedBalance = currencyFormatter.format(OrderData.currentBalance);
     });
+  }
+
+  void _openProfileSidebar(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierLabel: 'ProfileSidebar',
+      barrierDismissible: true,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: SafeArea(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.78,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    bottomLeft: Radius.circular(24),
+                  ),
+                ),
+                child: const _ProfileSidebarContent(),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: GojekAppBar(),
+        // Kalau mau trigger sidebar dari AppBar:
+        // appBar: GojekAppBar(onProfileTap: () => _openProfileSidebar(context)),
+       appBar: GojekAppBar(onProfileTap: () => _openProfileSidebar(context)),
         backgroundColor: const Color(0xFFF5F7FA),
         body: SingleChildScrollView(
           child: FadeTransition(
@@ -226,7 +281,8 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 6.0),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20.0),
@@ -262,24 +318,48 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildGopayMenuItem(
-                    icon: Icons.send_rounded,
-                    text: "Transfer",
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TransferView()))),
+                  icon: Icons.send_rounded,
+                  text: "Transfer",
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TransferView(),
+                    ),
+                  ),
+                ),
                 _buildGopayMenuItem(
-                    icon: Icons.qr_code_scanner_rounded,
-                    text: "Scan QR",
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ScanQrView()))),
+                  icon: Icons.qr_code_scanner_rounded,
+                  text: "Scan QR",
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ScanQrView(),
+                    ),
+                  ),
+                ),
                 _buildGopayMenuItem(
-                    icon: Icons.add_card_rounded,
-                    text: "Isi Saldo",
-                    onTap: () async {
-                      await Navigator.push(context, MaterialPageRoute(builder: (context) => IsiSaldoView()));
-                      _updateBalanceDisplay();
-                    }),
+                  icon: Icons.add_card_rounded,
+                  text: "Isi Saldo",
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IsiSaldoView(),
+                      ),
+                    );
+                    _updateBalanceDisplay();
+                  },
+                ),
                 _buildGopayMenuItem(
-                    icon: Icons.more_horiz_rounded,
-                    text: AppLocale.lainnya.getString(context),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const LainnyaView()))),
+                  icon: Icons.more_horiz_rounded,
+                  text: AppLocale.lainnya.getString(context),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LainnyaView(),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -288,7 +368,11 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildGopayMenuItem({required IconData icon, required String text, required VoidCallback onTap}) {
+  Widget _buildGopayMenuItem({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12.0),
@@ -626,6 +710,199 @@ class _BerandaPageState extends State<BerandaPage> with SingleTickerProviderStat
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _ProfileSidebarContent extends StatelessWidget {
+  const _ProfileSidebarContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // HEADER PROFILE
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 16, 16),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF00AA13),
+                Color(0xFF00C91D),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Row(
+            children: [
+              const CircleAvatar(
+                radius: 26,
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.person_rounded,
+                  size: 30,
+                  color: Color(0xFF00AA13),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Hi, User GoNesa', // TODO: ganti dengan nama user
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Lihat dan kelola akun kamu',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // MENU LIST
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            children: [
+              _SidebarItem(
+                icon: Icons.person_outline_rounded,
+                title: 'Profil Saya',
+                subtitle: 'Lihat dan edit data akun',
+                onTap: () {
+                  // TODO: Navigator.pushNamed(context, '/profile');
+                },
+              ),
+              _SidebarItem(
+                icon: Icons.receipt_long_rounded,
+                title: 'Riwayat Pesanan',
+                subtitle: 'Lihat transaksi dan pesanan kamu',
+                onTap: () {
+                  // TODO: buka halaman history / orders
+                },
+              ),
+              _SidebarItem(
+                icon: Icons.settings_outlined,
+                title: 'Pengaturan',
+                subtitle: 'Bahasa, notifikasi, keamanan',
+                onTap: () {
+                  // TODO: buka halaman settings
+                },
+              ),
+              const Divider(height: 24),
+              _SidebarItem(
+                icon: Icons.logout_rounded,
+                title: 'Keluar',
+                subtitle: 'Logout dari akun ini',
+                iconColor: Colors.red,
+                titleColor: Colors.red,
+                onTap: () {
+                  // TODO: panggil fungsi logout
+                  // lalu Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SidebarItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? titleColor;
+
+  const _SidebarItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.iconColor,
+    this.titleColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00AA13).withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  size: 22,
+                  color: iconColor ?? const Color(0xFF00AA13),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: titleColor ?? const Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: Color(0xFF9CA3AF),
+              ),
+            ],
           ),
         ),
       ),

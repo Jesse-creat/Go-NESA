@@ -2,29 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:gojek/pesanan/pesanan_view.dart';
 
 class GojekAppBar extends AppBar {
-  GojekAppBar()
-      : super(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            flexibleSpace: _buildGojekAppBar(),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.grey.withOpacity(0.0),
-                      Colors.grey.withOpacity(0.1),
-                      Colors.grey.withOpacity(0.0),
-                    ],
-                  ),
+  GojekAppBar({
+    Key? key,
+    required VoidCallback onProfileTap, // ✅ TERIMA CALLBACK
+  }) : super(
+          key: key,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          flexibleSpace: _buildGojekAppBar(onProfileTap),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1.0),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.grey.withOpacity(0.0),
+                    Colors.grey.withOpacity(0.1),
+                    Colors.grey.withOpacity(0.0),
+                  ],
                 ),
-                height: 1.0,
               ),
+              height: 1.0,
             ),
-          );
+          ),
+        );
 
-  static Widget _buildGojekAppBar() {
+  static Widget _buildGojekAppBar(VoidCallback onProfileTap) {
+    // ✅ TERUSKAN CALLBACK
     return Builder(
       builder: (BuildContext context) {
         return Container(
@@ -34,14 +38,15 @@ class GojekAppBar extends AppBar {
             children: <Widget>[
               // Logo Section
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: Image.asset(
                   "assets/Go.png",
                   height: 28.0,
                   fit: BoxFit.contain,
                 ),
               ),
-              
+
               // Right Section - Actions
               Row(
                 children: <Widget>[
@@ -100,9 +105,9 @@ class GojekAppBar extends AppBar {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(width: 12.0),
-                  
+
                   // Order History Button
                   Material(
                     color: Colors.transparent,
@@ -134,24 +139,22 @@ class GojekAppBar extends AppBar {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(width: 8.0),
-                  
+
                   // Profile/Menu Button
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        // Add profile/menu action here
-                      },
+                      onTap: onProfileTap, // ✅ PAKAI CALLBACK DI SINI
                       borderRadius: BorderRadius.circular(12.0),
                       child: Container(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
-                              const Color(0xFF00AA13),
-                              const Color(0xFF00C91D),
+                              Color(0xFF00AA13),
+                              Color(0xFF00C91D),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12.0),
