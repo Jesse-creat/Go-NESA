@@ -104,9 +104,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF00AA13),
-              const Color(0xFF00D41D),
-              const Color(0xFF00AA13),
+              const Color(0xFFFFD835),
+              const Color(0xFFFFC72C),
+              const Color(0xFFFFE24A),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -249,13 +249,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       'Powered by',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.7),
-                        fontSize: 12,
+                        fontSize: 12, 
                         fontWeight: FontWeight.w400,
                       ),
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'GOJEK',
+                      'GONESA',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,

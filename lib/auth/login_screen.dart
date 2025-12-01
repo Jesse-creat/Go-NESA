@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF00AA13),
+        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFFFFF400),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -126,9 +126,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF00AA13),
-              const Color(0xFF00C91D),
-              const Color(0xFF00AA13),
+              const Color(0xFFFFD835),
+              const Color(0xFFFFC72C),
+              const Color(0xFFFFE24A),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -278,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(16),
                                         borderSide: const BorderSide(
-                                          color: Color(0xFF00AA13),
+                                          color: Color(0xFFFFC72C),
                                           width: 2,
                                         ),
                                       ),
@@ -342,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(16),
                                         borderSide: const BorderSide(
-                                          color: Color(0xFF00AA13),
+                                          color: Color(0xFFFFC72C),
                                           width: 2,
                                         ),
                                       ),
@@ -374,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                       child: const Text(
                                         'Lupa password?',
                                         style: TextStyle(
-                                          color: Color(0xFF00AA13),
+                                          color: Color(0xFFFFC72C),
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
                                         ),
@@ -388,7 +388,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                   ElevatedButton(
                                     onPressed: _isLoading ? null : _login,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF00AA13),
+                                      backgroundColor: const Color(0xFFFFC72C),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 18),
                                       elevation: 0,
@@ -470,7 +470,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                         child: const Text(
                                           'Daftar sekarang',
                                           style: TextStyle(
-                                            color: Color(0xFF00AA13),
+                                            color: Color(0xFFFFC72C),
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                           ),

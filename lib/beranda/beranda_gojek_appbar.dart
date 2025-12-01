@@ -4,12 +4,13 @@ import 'package:gojek/pesanan/pesanan_view.dart';
 class GojekAppBar extends AppBar {
   GojekAppBar({
     Key? key,
-    required VoidCallback onProfileTap, // ✅ TERIMA CALLBACK
+    required VoidCallback onProfileTap, // ✅ TERIMA CALLBACK PROFILE
+    required VoidCallback onSearchTap, // ✅ TERIMA CALLBACK SEARCH
   }) : super(
           key: key,
           elevation: 0,
           backgroundColor: Colors.white,
-          flexibleSpace: _buildGojekAppBar(onProfileTap),
+          flexibleSpace: _buildGojekAppBar(onProfileTap, onSearchTap),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1.0),
             child: Container(
@@ -27,8 +28,10 @@ class GojekAppBar extends AppBar {
           ),
         );
 
-  static Widget _buildGojekAppBar(VoidCallback onProfileTap) {
-    // ✅ TERUSKAN CALLBACK
+  static Widget _buildGojekAppBar(
+    VoidCallback onProfileTap,
+    VoidCallback onSearchTap,
+  ) {
     return Builder(
       builder: (BuildContext context) {
         return Container(
@@ -36,18 +39,54 @@ class GojekAppBar extends AppBar {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              // Logo Section
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: Image.asset(
-                  "assets/Go.png",
-                  height: 28.0,
-                  fit: BoxFit.contain,
+              /// 🔍 Search Bar (kiri)
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onSearchTap,
+                    borderRadius: BorderRadius.circular(24.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 8.0,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F7FA),
+                        borderRadius: BorderRadius.circular(24.0),
+                        border: Border.all(
+                          color: Colors.grey.withOpacity(0.2),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            size: 20.0,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 8.0),
+                          Expanded(
+                            child: Text(
+                              "Cari layanan, makanan, tujuan",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13.0,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
-              // Right Section - Actions
+              const SizedBox(width: 12.0),
+
+              /// 🎯 Right Section - Actions
               Row(
                 children: <Widget>[
                   // Rewards Point Badge
@@ -146,7 +185,7 @@ class GojekAppBar extends AppBar {
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: onProfileTap, // ✅ PAKAI CALLBACK DI SINI
+                      onTap: onProfileTap,
                       borderRadius: BorderRadius.circular(12.0),
                       child: Container(
                         padding: const EdgeInsets.all(10.0),

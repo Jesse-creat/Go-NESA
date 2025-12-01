@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gojek/gofood/payment_view.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
 import 'package:intl/intl.dart';
 
@@ -70,10 +71,10 @@ class _CartViewState extends State<CartView> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: () {
-                      // TODO: Navigasi ke halaman pembayaran
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Navigasi ke halaman pembayaran...')),
-                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PaymentView()),
+                      ).then((_) => setState((){}));
                     },
                   ),
                 ],

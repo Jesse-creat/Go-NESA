@@ -1,52 +1,137 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:gojek/gofood/meal_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Kelas untuk item di keranjang belanja
+class CartItem {
+  final Meal meal;
+  int quantity;
+
+  CartItem({required this.meal, this.quantity = 1});
+
+  // Untuk menyimpan dan memuat dari SharedPreferences
+  Map<String, dynamic> toJson() => {
+        'meal': meal.toJson(), // Asumsi Meal punya method toJson()
+        'quantity': quantity,
+      };
+
+  factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
+        meal: Meal.fromJson(json['meal']),
+        quantity: json['quantity'],
+      );
+}
+
 class Order {
-  final IconData serviceIcon;
+  final String id;
   final String serviceName;
-  final String from;
-  final String to;
-  final String price;
   final DateTime orderTime;
+  final double totalPrice;
+  final String paymentMethod; // "QRIS", "Bayar di Tempat"
+  final List<CartItem>? items; // Untuk Go-Food
+  final String? from; // Untuk Go-Ride/Car
+  final String? to; // Untuk Go-Ride/Car
 
   Order({
-    required this.serviceIcon,
+    required this.id,
     required this.serviceName,
-    required this.from,
-    required this.to,
-    required this.price,
     required this.orderTime,
+    required this.totalPrice,
+    required this.paymentMethod,
+    this.items,
+    this.from,
+    this.to,
   });
 
   Map<String, dynamic> toJson() => {
-        'serviceIcon': serviceIcon.codePoint,
+        'id': id,
         'serviceName': serviceName,
+        'orderTime': orderTime.toIso8601String(),
+        'totalPrice': totalPrice,
+        'paymentMethod': paymentMethod,
+        'items': items?.map((item) => item.toJson()).toList(),
         'from': from,
         'to': to,
-        'price': price,
-        'orderTime': orderTime.toIso8601String(),
       };
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
-        serviceIcon: IconData(json['serviceIcon'], fontFamily: 'MaterialIcons'),
+        id: json['id'],
         serviceName: json['serviceName'],
+        orderTime: DateTime.parse(json['orderTime']),
+        totalPrice: json['totalPrice'],
+        paymentMethod: json['paymentMethod'],
+        items: (json['items'] as List<dynamic>?)
+            ?.map((itemJson) => CartItem.fromJson(itemJson))
+            .toList(),
         from: json['from'],
         to: json['to'],
-        price: json['price'],
-        orderTime: DateTime.parse(json['orderTime']),
       );
 }
 
 class OrderData {
   static List<Order> history = [];
-  static double currentBalance = 0.0; // Saldo awal
+  static List<CartItem> shoppingCart = [];
+  static double currentBalance = 0.0;
   static const _historyKey = 'orderHistory';
   static const _balanceKey = 'currentBalance';
+  static const _cartKey = 'shoppingCart';
 
+  // --- Manajemen Keranjang Belanja ---
+  static void addToCart(Meal meal) {
+    // Cek apakah item sudah ada di keranjang
+    for (var item in shoppingCart) {
+      if (item.meal.id == meal.id) {
+        item.quantity++;
+        saveCart();
+        return;
+      }
+    }
+    // Jika belum ada, tambahkan item baru
+    shoppingCart.add(CartItem(meal: meal));
+    saveCart();
+  }
+
+  static void removeFromCart(CartItem cartItem) {
+    shoppingCart.removeWhere((item) => item.meal.id == cartItem.meal.id);
+    saveCart();
+  }
+
+  static void clearCart() {
+    shoppingCart.clear();
+    saveCart();
+  }
+
+  static double getCartTotal() {
+    double total = 0;
+    for (var item in shoppingCart) {
+      // Asumsi setiap makanan punya harga, kita buat harga dummy 15000
+      total += (15000 * item.quantity);
+    }
+    return total;
+  }
+
+  static Future<void> saveCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> cartJson =
+        shoppingCart.map((item) => json.encode(item.toJson())).toList();
+    await prefs.setStringList(_cartKey, cartJson);
+  }
+
+  static Future<void> loadCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? cartJson = prefs.getStringList(_cartKey);
+    if (cartJson != null) {
+      shoppingCart = cartJson
+          .map((itemJson) => CartItem.fromJson(json.decode(itemJson)))
+          .toList();
+    }
+  }
+
+  // --- Manajemen Order History & Saldo ---
   static Future<void> saveOrders() async {
     final prefs = await SharedPreferences.getInstance();
-    final List<String> ordersJson = history.map((order) => json.encode(order.toJson())).toList();
+    final List<String> ordersJson =
+        history.map((order) => json.encode(order.toJson())).toList();
     await prefs.setStringList(_historyKey, ordersJson);
   }
 
@@ -54,7 +139,9 @@ class OrderData {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? ordersJson = prefs.getStringList(_historyKey);
     if (ordersJson != null) {
-      history = ordersJson.map((orderJson) => Order.fromJson(json.decode(orderJson))).toList();
+      history = ordersJson
+          .map((orderJson) => Order.fromJson(json.decode(orderJson)))
+          .toList();
     }
   }
 
@@ -65,6 +152,18 @@ class OrderData {
 
   static Future<void> loadBalance() async {
     final prefs = await SharedPreferences.getInstance();
-    currentBalance = prefs.getDouble(_balanceKey) ?? 120000.0; // Saldo default jika belum ada
+    currentBalance = prefs.getDouble(_balanceKey) ?? 120000.0;
   }
+}
+
+// Perlu menambahkan method toJson() ke Meal class
+extension MealJson on Meal {
+  Map<String, dynamic> toJson() => {
+        'idMeal': id,
+        'strMeal': name,
+        'strMealThumb': thumbnail,
+        'strCategory': category,
+        'strArea': area,
+        'strInstructions': instructions,
+      };
 }

@@ -80,12 +80,13 @@ class _GoRideViewState extends State<GoRideView> {
     OrderData.saveBalance();
 
     final newOrder = Order(
-      serviceIcon: Icons.directions_bike,
+      id: 'GORIDE-${Random().nextInt(99999)}',
       serviceName: 'GO-RIDE',
+      orderTime: DateTime.now(),
+      totalPrice: _rawPrice,
+      paymentMethod: 'GoNesa Saldo',
       from: _selectedFrom!,
       to: _selectedTo!,
-      price: _formattedPrice,
-      orderTime: DateTime.now(),
     );
 
     OrderData.history.insert(0, newOrder);
@@ -99,7 +100,7 @@ class _GoRideViewState extends State<GoRideView> {
           if (mounted) {
             Navigator.of(context).pop();
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => BerandaPage()),
+              MaterialPageRoute(builder: (context) => const BerandaPage()),
               (Route<dynamic> route) => false,
             );
           }

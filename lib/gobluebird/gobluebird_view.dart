@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
-import 'package:gojek/pesanan/pesanan_view.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class GoBluebirdView extends StatefulWidget {
   const GoBluebirdView({super.key});
@@ -16,7 +17,6 @@ class GoBluebirdView extends StatefulWidget {
 class _GoBluebirdViewState extends State<GoBluebirdView> {
   String? _selectedFrom;
   String? _selectedTo;
-
   double _rawPrice = 0.0;
   String _formattedPrice = "Rp 0";
   bool _isPriceCalculated = false;
@@ -53,8 +53,7 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
         return;
       }
       final random = Random();
-      // Harga Bluebird biasanya memiliki standar argo
-      final randomPrice = (30000 + random.nextInt(40001)).toDouble();
+      final randomPrice = (20000 + random.nextInt(30001)).toDouble();
       setState(() {
         _rawPrice = randomPrice;
         _formatPrice(_rawPrice);
@@ -64,35 +63,62 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
   }
 
   void _createOrder() {
+    if (OrderData.currentBalance < _rawPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Saldo tidak mencukupi!"), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    OrderData.currentBalance -= _rawPrice;
+    OrderData.saveBalance();
+
     final newOrder = Order(
-      serviceIcon: Icons.directions_car,
+      id: 'GOBLUEBIRD-${Random().nextInt(99999)}',
       serviceName: 'GO-BLUEBIRD',
+      orderTime: DateTime.now(),
+      totalPrice: _rawPrice,
+      paymentMethod: 'GoNesa Saldo',
       from: _selectedFrom!,
       to: _selectedTo!,
-      price: _formattedPrice,
-      orderTime: DateTime.now(),
     );
 
     OrderData.history.insert(0, newOrder);
     OrderData.saveOrders();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Pesanan Bluebird berhasil! Driver sedang menuju lokasi."),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const BerandaPage()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => PesananView()),
-          (Route<dynamic> route) => false,
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
+                const SizedBox(height: 16),
+                const Text(
+                  "Pemesanan berhasil! Driver sedang menuju lokasi.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
         );
-      }
-    });
+      },
+    );
   }
 
   @override
@@ -100,7 +126,7 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuBluebird,
-        title: const Text('Pesan Go-Bluebird'),
+        title: const Text('Pesan GoBluebird'),
         elevation: 0,
       ),
       body: Column(
@@ -141,7 +167,7 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
             const Text("Pilih Lokasi", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
             _buildLocationDropdown(
-              hint: 'Lokasi Penjemputan',
+              hint: 'Lokasi Jemput',
               icon: Icons.my_location,
               value: _selectedFrom,
               onChanged: (value) {
@@ -202,7 +228,7 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text("Estimasi Harga:", style: TextStyle(fontSize: 16)),
+            const Text('Estimasi Harga', style: TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -219,7 +245,7 @@ class _GoBluebirdViewState extends State<GoBluebirdView> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           child: const Text(
-            'Pesan Go-Bluebird',
+            'Pesan Sekarang',
             style: TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),

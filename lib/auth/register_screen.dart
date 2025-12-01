@@ -85,7 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF00AA13),
+        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFFFFF400),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -159,9 +159,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF00AA13),
-              const Color(0xFF00C91D),
-              const Color(0xFF00AA13),
+              const Color(0xFFFFD835),
+              const Color(0xFFFFC72C),
+              const Color(0xFFFFE24A),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -201,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                 height: 200,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFFFF400).withOpacity(0.1),
+                  color: const Color(0xFFFFC72C).withOpacity(0.1),
                 ),
               ),
             ),
@@ -462,7 +462,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: _acceptTerms
-                                              ? const Color(0xFF00AA13)
+                                              ? const Color(0xFFFFC72C)
                                               : Colors.grey.withOpacity(0.2),
                                           width: _acceptTerms ? 2 : 1,
                                         ),
@@ -474,12 +474,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                             height: 24,
                                             decoration: BoxDecoration(
                                               color: _acceptTerms
-                                                  ? const Color(0xFF00AA13)
+                                                  ? const Color(0xFFFFC72C)
                                                   : Colors.transparent,
                                               borderRadius: BorderRadius.circular(6),
                                               border: Border.all(
                                                 color: _acceptTerms
-                                                    ? const Color(0xFF00AA13)
+                                                    ? const Color(0xFFFFC72C)
                                                     : Colors.grey[400]!,
                                                 width: 2,
                                               ),
@@ -505,7 +505,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                                   TextSpan(
                                                     text: 'Syarat & Ketentuan',
                                                     style: TextStyle(
-                                                      color: Color(0xFF00AA13),
+                                                      color: Color(0xFFFFC72C),
                                                       fontWeight: FontWeight.w600,
                                                     ),
                                                   ),
@@ -513,7 +513,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                                   TextSpan(
                                                     text: 'Kebijakan Privasi',
                                                     style: TextStyle(
-                                                      color: Color(0xFF00AA13),
+                                                      color: Color(0xFFFFC72C),
                                                       fontWeight: FontWeight.w600,
                                                     ),
                                                   ),
@@ -532,7 +532,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                   ElevatedButton(
                                     onPressed: _isLoading ? null : _register,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF00AA13),
+                                      backgroundColor: const Color(0xFFFFC72C),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(vertical: 18),
                                       elevation: 0,
@@ -627,7 +627,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                                         child: const Text(
                                           'Masuk di sini',
                                           style: TextStyle(
-                                            color: Color(0xFF00AA13),
+                                            color: Color(0xFFFFC72C),
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -678,7 +678,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             child: Text(
               '${step + 1}',
               style: TextStyle(
-                color: isActive ? const Color(0xFF00AA13) : Colors.white.withOpacity(0.7),
+                color: isActive ? const Color(0xFFFFC72C) : Colors.white.withOpacity(0.7),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -736,7 +736,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
-            color: Color(0xFF00AA13),
+            color: Color(0xFFFFC72C),
             width: 2,
           ),
         ),

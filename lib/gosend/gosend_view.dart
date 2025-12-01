@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_localization/flutter_localization.dart';
-import 'package:gojek/app_locale.dart';
 import 'package:gojek/beranda/beranda_view.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
@@ -17,14 +15,20 @@ class GosendView extends StatefulWidget {
 }
 
 class _GosendViewState extends State<GosendView> {
-  final _formKey = GlobalKey<FormState>();
-  final _senderController = TextEditingController();
-  final _recipientController = TextEditingController();
-  final _itemController = TextEditingController();
-
+  String? _selectedFrom;
+  String? _selectedTo;
   double _rawPrice = 0.0;
   String _formattedPrice = "Rp 0";
-  bool _isFormFilled = false;
+  bool _isPriceCalculated = false;
+
+  final List<String> _magetanStreets = [
+    'Alun-Alun Magetan', 'Pasar Baru Magetan', 'Jalan Raya Maospati-Magetan',
+    'Jalan Gubernur Suryo', 'Jalan Pahlawan', 'Jalan Jendral Sudirman',
+    'Jalan Ahmad Yani', 'Jalan Diponegoro', 'Jalan MT Haryono', 'Jalan Tripandita',
+    'Jalan Manggis', 'Jalan Yosonegoro', 'Jalan Bangka', 'Jalan S. Parman',
+    'Jalan Kunti', 'Jalan Jaksa Agung Suprapto', 'Jalan Basuki Rahmat Timur',
+    'Jalan Basuki Rahmat Utara', 'Jalan Hasanuddin', 'Jalan Kharya Darma', 'Jalan Mayjend',
+  ];
 
   @override
   void initState() {
@@ -39,17 +43,21 @@ class _GosendViewState extends State<GosendView> {
     });
   }
 
-  void _calculatePrice() {
-    if (_formKey.currentState!.validate()) {
-      final deliveryFee = (10000 + Random().nextInt(15001)).toDouble();
+  void _calculateDummyPrice() {
+    if (_selectedFrom != null && _selectedTo != null) {
+      if (_selectedFrom == _selectedTo) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lokasi tidak boleh sama!"), backgroundColor: Colors.red),
+        );
+        setState(() => _isPriceCalculated = false);
+        return;
+      }
+      final random = Random();
+      final randomPrice = (10000 + random.nextInt(15001)).toDouble();
       setState(() {
-        _rawPrice = deliveryFee;
+        _rawPrice = randomPrice;
         _formatPrice(_rawPrice);
-        _isFormFilled = true;
-      });
-    } else {
-      setState(() {
-        _isFormFilled = false;
+        _isPriceCalculated = true;
       });
     }
   }
@@ -57,10 +65,7 @@ class _GosendViewState extends State<GosendView> {
   void _createOrder() {
     if (OrderData.currentBalance < _rawPrice) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Saldo tidak mencukupi!"),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("Saldo tidak mencukupi!"), backgroundColor: Colors.red),
       );
       return;
     }
@@ -69,12 +74,13 @@ class _GosendViewState extends State<GosendView> {
     OrderData.saveBalance();
 
     final newOrder = Order(
-      serviceIcon: Icons.next_week,
+      id: 'GOSEND-${Random().nextInt(99999)}',
       serviceName: 'GO-SEND',
-      from: _senderController.text,
-      to: _recipientController.text,
-      price: _formattedPrice,
       orderTime: DateTime.now(),
+      totalPrice: _rawPrice,
+      paymentMethod: 'GoNesa Saldo',
+      from: _selectedFrom!,
+      to: _selectedTo!,
     );
 
     OrderData.history.insert(0, newOrder);
@@ -88,7 +94,7 @@ class _GosendViewState extends State<GosendView> {
           if (mounted) {
             Navigator.of(context).pop();
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => BerandaPage()),
+              MaterialPageRoute(builder: (context) => const BerandaPage()),
               (Route<dynamic> route) => false,
             );
           }
@@ -103,7 +109,7 @@ class _GosendViewState extends State<GosendView> {
                 Lottie.asset('assets/icons/succes.json', width: 150, height: 150),
                 const SizedBox(height: 16),
                 const Text(
-                  "Pesanan Go-Send berhasil dibuat!",
+                  "Pengiriman berhasil! Driver sedang menuju lokasi.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
@@ -120,35 +126,70 @@ class _GosendViewState extends State<GosendView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GoNesaPalette.menuSend,
-        title: Text(AppLocale.pesanGoSend.getString(context)),
+        title: const Text('Pesan GoSend'),
         elevation: 0,
       ),
-      body: Form(
-        key: _formKey,
-        onChanged: _calculatePrice,
-        child: ListView(
-          padding: const EdgeInsets.all(20.0),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              color: Colors.grey[200],
+              child: Image.asset(
+                'assets/images/map_magetan.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (context, error, stackTrace) => const Center(child: Text('Gagal memuat peta')),
+              ),
+            ),
+          ),
+          _buildOrderCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderCard() {
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 10,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(AppLocale.detailPengiriman.getString(context), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            _buildTextFormField(
-              controller: _senderController,
-              label: AppLocale.alamatPengirim.getString(context),
-              icon: Icons.person_pin_circle,
-            ),
+            const Text("Pilih Lokasi Pengiriman", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
-            _buildTextFormField(
-              controller: _recipientController,
-              label: AppLocale.alamatPenerima.getString(context),
+            _buildLocationDropdown(
+              hint: 'Lokasi Pengambilan',
+              icon: Icons.my_location,
+              value: _selectedFrom,
+              onChanged: (value) {
+                setState(() {
+                  _selectedFrom = value;
+                  _calculateDummyPrice();
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            _buildLocationDropdown(
+              hint: 'Lokasi Pengantaran',
               icon: Icons.location_on,
+              value: _selectedTo,
+              onChanged: (value) {
+                setState(() {
+                  _selectedTo = value;
+                  _calculateDummyPrice();
+                });
+              },
             ),
-            const SizedBox(height: 15),
-            _buildTextFormField(
-              controller: _itemController,
-              label: AppLocale.deskripsiBarang.getString(context),
-              icon: Icons.inventory_2,
-            ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             _buildPriceAndOrderSection(),
           ],
         ),
@@ -156,24 +197,28 @@ class _GosendViewState extends State<GosendView> {
     );
   }
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String label,
+  Widget _buildLocationDropdown({
+    required String hint,
     required IconData icon,
+    required String? value,
+    required ValueChanged<String?> onChanged,
   }) {
-    return TextFormField(
-      controller: controller,
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
       decoration: InputDecoration(
-        labelText: label,
         prefixIcon: Icon(icon, color: GoNesaPalette.menuSend),
+        labelText: hint,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return '$label tidak boleh kosong';
-        }
-        return null;
-      },
+      items: _magetanStreets.map((String street) {
+        return DropdownMenuItem<String>(
+          value: street,
+          child: Text(street, overflow: TextOverflow.ellipsis),
+        );
+      }).toList(),
+      onChanged: onChanged,
     );
   }
 
@@ -183,7 +228,7 @@ class _GosendViewState extends State<GosendView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocale.ongkosKirim.getString(context), style: const TextStyle(fontSize: 16)),
+            const Text('Estimasi Harga', style: TextStyle(fontSize: 16)),
             Text(
               _formattedPrice,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -192,16 +237,16 @@ class _GosendViewState extends State<GosendView> {
         ),
         const SizedBox(height: 15),
         ElevatedButton(
-          onPressed: _isFormFilled ? _createOrder : null,
+          onPressed: _isPriceCalculated ? _createOrder : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: GoNesaPalette.menuSend,
             disabledBackgroundColor: Colors.grey[300],
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          child: Text(
-            AppLocale.pesanGoSend.getString(context),
-            style: const TextStyle(color: Colors.white, fontSize: 18),
+          child: const Text(
+            'Pesan Sekarang',
+            style: TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
       ],

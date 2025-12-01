@@ -8,11 +8,16 @@ import 'package:gojek/goride/goride_view.dart';
 import 'package:gojek/gocar/gocar_view.dart';
 import 'package:gojek/gobluebird/gobluebird_view.dart';
 import 'package:gojek/gofood/gofood_view.dart';
+import 'package:gojek/gofood/meal_model.dart';
+import 'package:gojek/gofood/themealdb_api.dart';
+import 'package:gojek/gofood/meal_model.dart';
+import 'package:gojek/gofood/themealdb_api.dart';
 import 'package:gojek/gosend/gosend_view.dart';
 import 'package:gojek/godeals/godeals_view.dart';
 import 'package:gojek/gopulsa/gopulsa_view.dart';
 import 'package:gojek/isi_saldo/isi_saldo_view.dart';
 import 'package:gojek/lainnya/lainnya_view.dart';
+import 'package:gojek/pencarian/pencarian_view.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
 import 'package:gojek/scan_qr/scan_qr_view.dart';
 import 'package:gojek/transfer/transfer_view.dart';
@@ -31,6 +36,10 @@ class _BerandaPageState extends State<BerandaPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  // === TheMealDB ===
+  late Future<List<Meal>> _goFoodFeaturedFuture;
+  final ThemealdbApi _mealApi = ThemealdbApi();
 
   List<GojekService> _getGojekServices(BuildContext context) {
     return [
@@ -70,14 +79,6 @@ class _BerandaPageState extends State<BerandaPage>
     ];
   }
 
-  final List<Food> _goFoodFeaturedList = [
-    Food(title: "Steak Andakar", image: "assets/images/food_1.jpg"),
-    Food(title: "Mie Ayam Tumini", image: "assets/images/food_2.jpg"),
-    Food(title: "Tengkleng Hohah", image: "assets/images/food_3.jpg"),
-    Food(title: "Warung Steak", image: "assets/images/food_4.jpg"),
-    Food(title: "Kindai Warung Banjar", image: "assets/images/food_5.jpg")
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -104,6 +105,10 @@ class _BerandaPageState extends State<BerandaPage>
     );
 
     _animationController.forward();
+
+    // === Inisialisasi data GO-FOOD dari TheMealDB ===
+    _goFoodFeaturedFuture = _mealApi.getMealsByCategory('Seafood');
+    // bisa ganti kategori: 'Beef', 'Chicken', 'Dessert', dll
   }
 
   @override
@@ -114,7 +119,7 @@ class _BerandaPageState extends State<BerandaPage>
 
   void _updateBalanceDisplay() {
     final currencyFormatter =
-        NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
+    NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0);
     setState(() {
       _formattedBalance = currencyFormatter.format(OrderData.currentBalance);
     });
@@ -172,9 +177,15 @@ class _BerandaPageState extends State<BerandaPage>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        // Kalau mau trigger sidebar dari AppBar:
-        // appBar: GojekAppBar(onProfileTap: () => _openProfileSidebar(context)),
-       appBar: GojekAppBar(onProfileTap: () => _openProfileSidebar(context)),
+        appBar: GojekAppBar(
+          onProfileTap: () => _openProfileSidebar(context),
+          onSearchTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PencarianView()),
+            );
+          },
+        ),
         backgroundColor: const Color(0xFFF5F7FA),
         body: SingleChildScrollView(
           child: FadeTransition(
@@ -511,6 +522,8 @@ class _BerandaPageState extends State<BerandaPage>
     );
   }
 
+  // ===================== GO-FOOD (TheMealDB) =====================
+
   Widget _buildGoFoodFeatured() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -567,13 +580,59 @@ class _BerandaPageState extends State<BerandaPage>
           const SizedBox(height: 16.0),
           SizedBox(
             height: 190.0,
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemCount: _goFoodFeaturedList.length,
-              itemBuilder: (context, index) {
-                return _rowGoFoodFeatured(_goFoodFeaturedList[index], index);
+            child: FutureBuilder<List<Meal>>(
+              future: _goFoodFeaturedFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Loading: skeleton sederhana
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 4,
+                    itemBuilder: (_, index) {
+                      return Container(
+                        width: 140,
+                        margin: const EdgeInsets.only(right: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Gagal memuat rekomendasi makanan',
+                      style: TextStyle(
+                        color: Colors.red.shade400,
+                        fontSize: 12,
+                      ),
+                    ),
+                  );
+                }
+
+                final meals = snapshot.data ?? [];
+
+                if (meals.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Tidak ada rekomendasi makanan',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: meals.length,
+                  itemBuilder: (context, index) {
+                    return _rowGoFoodFeaturedFromApi(meals[index], index);
+                  },
+                );
               },
             ),
           ),
@@ -582,7 +641,7 @@ class _BerandaPageState extends State<BerandaPage>
     );
   }
 
-  Widget _rowGoFoodFeatured(Food food, int index) {
+  Widget _rowGoFoodFeaturedFromApi(Meal meal, int index) {
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 500 + (index * 100)),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -600,7 +659,11 @@ class _BerandaPageState extends State<BerandaPage>
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {},
+            onTap: () async {
+              // Contoh: kalau mau ambil detail resep
+              // final detail = await _mealApi.getMealDetail(meal.id);
+              // TODO: push ke halaman detail GoFood
+            },
             borderRadius: BorderRadius.circular(16.0),
             child: Container(
               width: 140.0,
@@ -625,11 +688,17 @@ class _BerandaPageState extends State<BerandaPage>
                     ),
                     child: Stack(
                       children: [
-                        Image.asset(
-                          food.image,
+                        Image.network(
+                          meal.thumbnail,
                           width: 140.0,
                           height: 120.0,
                           fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 140,
+                            height: 120,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.broken_image, size: 28),
+                          ),
                         ),
                         Positioned(
                           top: 8,
@@ -662,7 +731,7 @@ class _BerandaPageState extends State<BerandaPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          food.title,
+                          meal.name,
                           style: const TextStyle(
                             fontSize: 13.0,
                             fontWeight: FontWeight.w700,
@@ -673,30 +742,30 @@ class _BerandaPageState extends State<BerandaPage>
                         ),
                         const SizedBox(height: 4.0),
                         Row(
-                          children: [
+                          children: const [
                             Icon(
                               Icons.star,
                               size: 14.0,
-                              color: Colors.amber[700],
+                              color: Colors.amber,
                             ),
-                            const SizedBox(width: 4.0),
-                            const Text(
-                              "4.8",
+                            SizedBox(width: 4.0),
+                            Text(
+                              "4.8", // dummy rating
                               style: TextStyle(
                                 fontSize: 11.0,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF7F8C8D),
                               ),
                             ),
-                            const SizedBox(width: 8.0),
-                            const Icon(
+                            SizedBox(width: 8.0),
+                            Icon(
                               Icons.access_time,
                               size: 14.0,
                               color: Color(0xFF7F8C8D),
                             ),
-                            const SizedBox(width: 4.0),
-                            const Text(
-                              "20 min",
+                            SizedBox(width: 4.0),
+                            Text(
+                              "20 min", // dummy waktu
                               style: TextStyle(
                                 fontSize: 11.0,
                                 color: Color(0xFF7F8C8D),
@@ -717,6 +786,7 @@ class _BerandaPageState extends State<BerandaPage>
   }
 }
 
+// ===================== SIDEBAR PROFILE =====================
 
 class _ProfileSidebarContent extends StatelessWidget {
   const _ProfileSidebarContent();
@@ -750,10 +820,10 @@ class _ProfileSidebarContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Hi, User GoNesa', // TODO: ganti dengan nama user
                       style: TextStyle(

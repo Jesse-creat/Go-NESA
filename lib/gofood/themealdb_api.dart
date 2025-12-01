@@ -1,57 +1,57 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class GoFoodPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('GO-FOOD'),
-      ),
-      body: ListView(
-        padding: EdgeInsets.all(16.0),
-        children: <Widget>[
-          Text('Pilihan Kategori', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12.0),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            children: List.generate(6, (index) {
-              return Card(
-                elevation: 1,
-                margin: EdgeInsets.all(6),
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Icon(Icons.restaurant_menu, color: Colors.redAccent),
-                        SizedBox(height: 8.0),
-                        Text('Makanan ${index + 1}', style: TextStyle(fontSize: 12))
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-          SizedBox(height: 18.0),
-          Text('Rekomendasi Teratas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 12.0),
-          Column(
-            children: List.generate(4, (i) {
-              return ListTile(
-                leading: ClipRRect(borderRadius: BorderRadius.circular(8.0), child: Image.asset('assets/images/food_${i + 1}.jpg', width: 56, height: 56, fit: BoxFit.cover)),
-                title: Text('Restoran ${i + 1}'),
-                subtitle: Text('Rating 4.${i+1} • 15-25 menit'),
-                trailing: Icon(Icons.chevron_right),
-                onTap: () {},
-              );
-            }),
-          ),
-        ],
-      ),
-    );
+import 'meal_model.dart';
+
+class ThemealdbApi {
+  // v1/1 = API v1 + test API key "1"
+  static const String _baseUrl = 'https://www.themealdb.com/api/json/v1/1';
+
+  final http.Client _client;
+
+  ThemealdbApi({http.Client? client}) : _client = client ?? http.Client();
+
+  /// Contoh: ambil makanan berdasarkan kategori, misal 'Seafood'
+  Future<List<Meal>> getMealsByCategory(String category) async {
+    final uri = Uri.parse('$_baseUrl/filter.php?c=$category');
+
+    final response = await _client.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal memuat meal (category=$category): ${response.statusCode}');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    final List<dynamic>? mealsJson = data['meals'];
+
+    if (mealsJson == null) return [];
+
+    // endpoint filter.php hanya mengembalikan idMeal, strMeal, strMealThumb
+    return mealsJson.map((e) {
+      final map = e as Map<String, dynamic>;
+      return Meal(
+        id: map['idMeal'] ?? '',
+        name: map['strMeal'] ?? '',
+        thumbnail: map['strMealThumb'] ?? '',
+      );
+    }).toList();
+  }
+
+  /// Kalau nanti mau detail resep:
+  Future<Meal?> getMealDetail(String idMeal) async {
+    final uri = Uri.parse('$_baseUrl/lookup.php?i=$idMeal');
+
+    final response = await _client.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal memuat detail meal: ${response.statusCode}');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    final List<dynamic>? mealsJson = data['meals'];
+
+    if (mealsJson == null || mealsJson.isEmpty) return null;
+
+    return Meal.fromJson(mealsJson.first as Map<String, dynamic>);
   }
 }

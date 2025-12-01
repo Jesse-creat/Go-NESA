@@ -88,7 +88,7 @@ class LainnyaView extends StatelessWidget {
     if (destination != null) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => destination),
+        MaterialPageRoute(builder: (context) => destination!),
       );
     }
   }

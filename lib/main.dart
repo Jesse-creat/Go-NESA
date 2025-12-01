@@ -4,6 +4,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:gojek/app_locale.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/firebase_options.dart';
+import 'package:gojek/pesanan/pesanan_model.dart';
 import 'package:gojek/splash_screen.dart';
 
 void main() async {
@@ -26,12 +27,19 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    super.initState();
+    _loadData();
     localization.init(
       mapLocales: LOCALES,
       initLanguageCode: 'id',
     );
     localization.onTranslatedLanguage = _onTranslatedLanguage;
-    super.initState();
+  }
+
+  Future<void> _loadData() async {
+    await OrderData.loadBalance();
+    await OrderData.loadOrders();
+    setState(() {}); // Memperbarui UI jika diperlukan setelah data dimuat
   }
 
   void _onTranslatedLanguage(Locale? locale) {

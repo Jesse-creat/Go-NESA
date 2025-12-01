@@ -78,14 +78,15 @@ class _GocarViewState extends State<GocarView> {
 
     OrderData.currentBalance -= _rawPrice;
     OrderData.saveBalance();
-    
+
     final newOrder = Order(
-      serviceIcon: Icons.local_car_wash,
+      id: 'GOCAR-${Random().nextInt(99999)}',
       serviceName: 'GO-CAR',
+      orderTime: DateTime.now(),
+      totalPrice: _rawPrice,
+      paymentMethod: 'GoNesa Saldo',
       from: _selectedFrom!,
       to: _selectedTo!,
-      price: _formattedPrice,
-      orderTime: DateTime.now(),
     );
 
     OrderData.history.insert(0, newOrder);
@@ -99,7 +100,7 @@ class _GocarViewState extends State<GocarView> {
           if (mounted) {
             Navigator.of(context).pop();
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => BerandaPage()),
+              MaterialPageRoute(builder: (context) => const BerandaPage()),
               (Route<dynamic> route) => false,
             );
           }
@@ -250,7 +251,7 @@ class _GocarViewState extends State<GocarView> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           child: Text(
-            AppLocale.pesanSekarang.getString(context),
+            AppLocale.pesanGoCar.getString(context),
             style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
