@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gojek/akun/about_us_view.dart';
 import 'package:gojek/app_locale.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/firebase_options.dart';
@@ -25,6 +27,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final FlutterLocalization localization = FlutterLocalization.instance;
 
+  late final GoRouter _router;
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +38,19 @@ class _MyAppState extends State<MyApp> {
       initLanguageCode: 'id',
     );
     localization.onTranslatedLanguage = _onTranslatedLanguage;
+
+    _router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: '/about-us',
+          builder: (context, state) => const AboutUsView(),
+        ),
+      ],
+    );
   }
 
   Future<void> _loadData() async {
@@ -48,7 +65,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'GoNesa',
       theme: ThemeData(
@@ -58,7 +75,7 @@ class _MyAppState extends State<MyApp> {
       ),
       supportedLocales: localization.supportedLocales,
       localizationsDelegates: localization.localizationsDelegates,
-      home: const SplashScreen(),
+      routerConfig: _router,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:gojek/akun/about_us_view.dart';
 import 'package:gojek/akun/edit_akun_view.dart';
 import 'package:gojek/akun/pilih_bahasa_view.dart';
 import 'package:gojek/akun/pusat_bantuan_view.dart';
@@ -595,6 +596,15 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             color: Colors.teal,
             gradient: [Colors.teal.shade400, Colors.teal.shade600],
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PusatBantuanView())),
+          ),
+          _buildDivider(),
+          _buildMenuItem(
+            icon: Icons.info_outline_rounded,
+            title: 'About Us',
+            subtitle: 'Tentang tim pengembang',
+            color: Colors.indigo,
+            gradient: [Colors.indigo.shade400, Colors.indigo.shade600],
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutUsView())),
           ),
         ],
       ),
