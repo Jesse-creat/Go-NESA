@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gojek/constans.dart';
-import 'package:gojek/landingpage/landingpage_view.dart';
 import 'package:gojek/auth/auth_service.dart';
 import 'package:gojek/auth/register_screen.dart';
 
@@ -98,16 +98,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
     if (success) {
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const LandingPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
+        context.go('/home');
       }
     } else {
       _showSnackbar('Email atau password salah.', isError: true);

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gojek/akun/edit_akun_view.dart';
 import 'package:gojek/akun/pilih_bahasa_view.dart';
 import 'package:gojek/akun/pusat_bantuan_view.dart';
@@ -9,7 +10,6 @@ import 'package:gojek/akun/voucher_data.dart';
 import 'package:gojek/akun/voucher_saya_view.dart';
 import 'package:gojek/app_locale.dart';
 import 'package:gojek/auth/auth_service.dart';
-import 'package:gojek/auth/login_screen.dart';
 import 'package:gojek/constans.dart';
 import 'package:gojek/pesanan/pesanan_model.dart';
 import 'package:gojek/pesanan/pesanan_view.dart';
@@ -574,6 +574,15 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
             gradient: [Colors.teal.shade400, Colors.teal.shade600],
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PusatBantuanView())),
           ),
+          _buildDivider(),
+          _buildMenuItem(
+            icon: Icons.info_outline_rounded,
+            title: 'Tentang GoNesa',
+            subtitle: 'Lihat detail aplikasi dan tim',
+            color: Colors.blue,
+            gradient: [Colors.blue.shade400, Colors.blue.shade600],
+            onTap: () => context.go('/about'),
+          ),
         ],
       ),
     );
@@ -752,11 +761,7 @@ class _AkunPageState extends State<AkunPage> with SingleTickerProviderStateMixin
               onPressed: () async {
                 await AuthService.logoutUser();
                 if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (route) => false,
-                  );
+                  context.go('/login');
                 }
               },
               style: ElevatedButton.styleFrom(

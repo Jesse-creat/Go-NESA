@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gojek/auth/auth_service.dart';
-import 'package:gojek/auth/login_screen.dart';
-import 'package:gojek/landingpage/landingpage_view.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -69,16 +68,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     bool isLoggedIn = await AuthService.isLoggedIn();
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              isLoggedIn ? LandingPage() : LoginScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
+      if (isLoggedIn) {
+        context.go('/home');
+      } else {
+        context.go('/login');
+      }
     }
   }
 
